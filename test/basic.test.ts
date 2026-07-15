@@ -1243,6 +1243,23 @@ describe('navigate', () => {
     expect(status).toEqual(301)
   })
 
+  it.each([
+    ['encoded slash', 'slash', '/?callback=%2Fother'],
+    ['encoded colon', 'colon', '/?time=10%3A30'],
+    ['encoded space', 'space', '/?q=hello%20world'],
+    ['literal plus', 'plus', '/?q=hello+world'],
+    ['double-encoded slash', 'double', '/?callback=%252Fother'],
+    ['encoded Unicode', 'unicode', '/?q=%C3%B1'],
+    ['raw Unicode', 'rawUnicode', '/?q=%C3%B1'],
+    ['malformed percent', 'malformed', '/?q=%'],
+    ['encoded query with hash', 'hash', '/?q=%2F#frag%20x'],
+  ])('preserves %s in middleware redirects', async (_, testCase, expected) => {
+    const { headers, status } = await fetch(`/navigate-to-encoded-query?case=${testCase}`, { redirect: 'manual' })
+
+    expect(headers.get('location')).toEqual(expected)
+    expect(status).toEqual(302)
+  })
+
   it('respects redirects + headers in middleware', async () => {
     const res = await fetch('/navigate-some-path/', { redirect: 'manual', headers: { 'trailing-slash': 'true' } })
     expect(res.headers.get('location')).toEqual('/navigate-some-path')

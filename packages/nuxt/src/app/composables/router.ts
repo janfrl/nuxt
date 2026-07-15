@@ -253,7 +253,17 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       // We wait to perform the redirect last in case any other middleware will intercept the redirect
       // and redirect somewhere else instead.
       if (!isExternal && inMiddleware) {
-        router.afterEach(final => final.fullPath === fullPath ? redirect(false) : undefined)
+        // Normalize only for comparison; the original URL is still used for the redirect.
+        let normalizedFullPath = fullPath
+        if (typeof to === 'string') {
+          const { path, query, hash } = router.resolve(to)
+          normalizedFullPath = router.resolve({
+            path,
+            query,
+            hash,
+          }).fullPath
+        }
+        router.afterEach(final => final.fullPath === fullPath || final.fullPath === normalizedFullPath ? redirect(false) : undefined)
         return to
       }
       return redirect(!inMiddleware ? undefined : /* abort route navigation */ false)
