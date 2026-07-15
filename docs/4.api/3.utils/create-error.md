@@ -46,10 +46,27 @@ export default eventHandler(() => {
   throw createError({
     status: 404,
     statusText: 'Page Not Found',
+    data: {
+      reason: 'Movie not found',
+    },
   })
 })
 ```
 
-In API routes, using `createError` by passing an object with a short `statusText` is recommended because it can be accessed on the client side. Otherwise, a `message` passed to `createError` on an API route will not propagate to the client. Alternatively, you can use the `data` property to pass data back to the client. In any case, always consider avoiding to put dynamic user input to the message to avoid potential security issues.
+In API routes, using `createError` by passing an object with a short `statusText` is recommended because it can be accessed on the client side. Otherwise, a `message` passed to `createError` on an API route will not propagate to the client. Alternatively, you can use the `data` property to pass data back to the client.
+
+When using `useFetch`, `error.value.data` contains the complete parsed error response body. The custom value passed to `createError` is available on that body's `data` property, at `error.value.data.data`:
+
+```json [error.value.data]
+{
+  "statusCode": 404,
+  "statusMessage": "Page Not Found",
+  "data": {
+    "reason": "Movie not found"
+  }
+}
+```
+
+In any case, always consider avoiding to put dynamic user input to the message to avoid potential security issues.
 
 :read-more{to="/docs/4.x/getting-started/error-handling"}
